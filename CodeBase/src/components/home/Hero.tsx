@@ -88,7 +88,7 @@ const Hero: React.FC = () => {
             className="lg:ml-auto"
           >
             <img 
-              src="https://images.pexels.com/photos/6646972/pexels-photo-6646972.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+              src="https://i.pinimg.com/736x/76/57/4a/76574a55771e9930e90d6f04d2ec8337.jpg"
               alt="People sharing food and reducing waste" 
               className="w-full h-auto rounded-lg shadow-xl"
             />
