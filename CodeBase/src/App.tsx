@@ -1,19 +1,21 @@
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import NavBar from './components/ui/NavBar';
-import Footer from './components/ui/Footer';
-import HomePage from './pages/HomePage';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import React, { Suspense, lazy } from "react";
+import { Routes, Route } from "react-router-dom";
+import NavBar from "./components/ui/NavBar";
+import Footer from "./components/ui/Footer";
+import HomePage from "./pages/HomePage";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Lazy loaded pages
-const MapPage = lazy(() => import('./pages/MapPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
-const ContactPage = lazy(() => import('./pages/ContactPage'));
-const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
-const SignupPage = lazy(() => import('./pages/auth/SignupPage'));
-const DonateFormPage = lazy(() => import('./pages/DonateFormPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const MapPage = lazy(() => import("./pages/MapPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const SignupPage = lazy(() => import("./pages/auth/SignupPage"));
+const DonateFormPage = lazy(() => import("./pages/DonateFormPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const NgoCertificationPage = lazy(() => import("./pages/NgoCertificationPage"));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -36,11 +38,16 @@ function App() {
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            
+            <Route path="/terms" element={<TermsPage />} />
+            <Route
+              path="/ngo-certification"
+              element={<NgoCertificationPage />}
+            />
+
             {/* Auth routes */}
             <Route path="/auth/login" element={<LoginPage />} />
             <Route path="/auth/signup" element={<SignupPage />} />
-            
+
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
