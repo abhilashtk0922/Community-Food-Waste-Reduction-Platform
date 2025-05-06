@@ -1,54 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient('https://zfedbixtpqbltxmvppuq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmZWRiaXh0cHFibHR4bXZwcHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NjU1OTcsImV4cCI6MjA2MjA0MTU5N30.xRIgM1oe_GScyc0VLdyJCMTgTKOdapurRllC5h1ZYPM');
 
 interface Testimonial {
   id: number;
-  quote: string;
   name: string;
-  role: string;
-  image: string;
+  email?: string;
+  message: string;
+  created_at?: string;
 }
 
-const Testimonials: React.FC = () => {
-  const testimonials: Testimonial[] = [
-    {
-      id: 1,
-      quote: "As a restaurant owner, FoodShare has revolutionized how we handle surplus food. Instead of throwing it away, we can now connect with people who need it. The platform is intuitive and has helped us reduce our waste by 80%.",
-      name: "Sarah Johnson",
-      role: "Restaurant Owner",
-      image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150"
-    },
-    {
-      id: 2,
-      quote: "I run a community center for vulnerable families, and FoodShare has been a game-changer. We now receive regular donations that help us provide nutritious meals to families in need. The real-time notifications are especially helpful.",
-      name: "Michael Rodriguez",
-      role: "Community Center Director",
-      image: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150"
-    },
-    {
-      id: 3,
-      quote: "The gamification aspect makes donating food fun and rewarding. I love seeing my environmental impact metrics go up, and the badges give me a sense of accomplishment. It's made me more conscious about reducing waste.",
-      name: "Emma Chen",
-      role: "Regular Donor",
-      image: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150"
-    }
-  ];
-
+export default function Testimonials() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching testimonials:', error);
+      } else {
+        setTestimonials(data || []);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   const nextTestimonial = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
   };
 
   const prevTestimonial = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length);
+    setCurrentIndex((prevIndex) =>
+      (prevIndex - 1 + testimonials.length) % testimonials.length
+    );
   };
+
+  if (testimonials.length === 0) {
+    return (
+      <div className="text-center p-10">
+        <h2 className="text-2xl font-bold">Testimonials</h2>
+        <p className="mt-4">No testimonials yet.</p>
+      </div>
+    );
+  }
+
+  const current = testimonials[currentIndex];
 
   return (
     <section className="py-20 bg-gray-50">
-      <div className="container-custom">
-        <motion.div 
+      <div className="container mx-auto px-4">
+        <motion.div
           className="text-center max-w-3xl mx-auto mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -62,8 +72,8 @@ const Testimonials: React.FC = () => {
         </motion.div>
 
         <div className="relative max-w-4xl mx-auto">
-          <motion.div 
-            key={testimonials[currentIndex].id}
+          <motion.div
+            key={current.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -73,40 +83,35 @@ const Testimonials: React.FC = () => {
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="mb-6 md:mb-0">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary-100">
-                    <img 
-                      src={testimonials[currentIndex].image} 
-                      alt={testimonials[currentIndex].name} 
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary-100 bg-gray-200 flex items-center justify-center">
+                    <span className="text-xl font-bold text-primary-500">{current.name[0]}</span>
                   </div>
                   <div className="absolute -top-2 -right-2 bg-primary-500 rounded-full p-2">
                     <Quote className="w-4 h-4 text-white" />
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex-1">
-                <p className="text-gray-700 text-lg italic mb-6">"{testimonials[currentIndex].quote}"</p>
-                
+                <p className="text-gray-700 text-lg italic mb-6">"{current.message}"</p>
                 <div>
-                  <h4 className="text-xl font-semibold">{testimonials[currentIndex].name}</h4>
-                  <p className="text-gray-600">{testimonials[currentIndex].role}</p>
+                  <h4 className="text-xl font-semibold">{current.name}</h4>
+                  {current.email && <p className="text-gray-600">{current.email}</p>}
                 </div>
               </div>
             </div>
           </motion.div>
-          
+
           {/* Navigation buttons */}
           <div className="flex justify-center mt-8 space-x-4">
-            <button 
+            <button
               onClick={prevTestimonial}
               className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
               aria-label="Previous testimonial"
             >
               <ChevronLeft className="w-6 h-6 text-gray-700" />
             </button>
-            
+
             <div className="flex items-center space-x-2">
               {testimonials.map((_, index) => (
                 <button
@@ -119,8 +124,8 @@ const Testimonials: React.FC = () => {
                 />
               ))}
             </div>
-            
-            <button 
+
+            <button
               onClick={nextTestimonial}
               className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
               aria-label="Next testimonial"
@@ -132,6 +137,4 @@ const Testimonials: React.FC = () => {
       </div>
     </section>
   );
-};
-
-export default Testimonials;
+}
