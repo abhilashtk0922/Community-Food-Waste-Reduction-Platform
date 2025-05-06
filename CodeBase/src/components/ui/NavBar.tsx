@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, User } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,9 +20,9 @@ const NavBar: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -36,36 +36,70 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <header 
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        scrolled || isOpen ? 'bg-white shadow-md' : 'bg-transparent'
+        scrolled || isOpen ? "bg-white shadow-md" : "bg-transparent"
       }`}
     >
       <div className="container-custom mx-auto">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link 
-            to="/" 
-            className="flex items-center space-x-2"
-          >
-            <span className="text-primary-500 text-2xl font-poppins font-bold">FoodShare</span>
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="text-primary-500 text-2xl font-poppins font-bold">
+              FoodShare
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className={`font-medium hover:text-primary-500 transition-colors ${location.pathname === '/' ? 'text-primary-500' : 'text-gray-700'}`}>
+            <Link
+              to="/"
+              className={`font-medium hover:text-primary-500 transition-colors ${
+                location.pathname === "/" ? "text-primary-500" : "text-gray-700"
+              }`}
+            >
               Home
             </Link>
-            <Link to="/how-it-works" className={`font-medium hover:text-primary-500 transition-colors ${location.pathname === '/how-it-works' ? 'text-primary-500' : 'text-gray-700'}`}>
+            <Link
+              to="/how-it-works"
+              className={`font-medium hover:text-primary-500 transition-colors ${
+                location.pathname === "/how-it-works"
+                  ? "text-primary-500"
+                  : "text-gray-700"
+              }`}
+            >
               How It Works
             </Link>
-            <Link to="/map" className={`font-medium hover:text-primary-500 transition-colors ${location.pathname === '/map' ? 'text-primary-500' : 'text-gray-700'}`}>
+            <Link
+              to="/map"
+              className={`font-medium hover:text-primary-500 transition-colors ${
+                location.pathname === "/map"
+                  ? "text-primary-500"
+                  : "text-gray-700"
+              }`}
+            >
               Food Map
             </Link>
-            <Link to="/dashboard" className={`font-medium hover:text-primary-500 transition-colors ${location.pathname.includes('/dashboard') ? 'text-primary-500' : 'text-gray-700'}`}>
-              Dashboard
-            </Link>
-            <Link to="/contact" className={`font-medium hover:text-primary-500 transition-colors ${location.pathname === '/contact' ? 'text-primary-500' : 'text-gray-700'}`}>
+            <a
+              href="https://maverick4.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`font-medium hover:text-primary-500 transition-colors ${
+                location.pathname.includes("/dashboard")
+                  ? "text-primary-500"
+                  : "text-gray-700"
+              }`}
+            >
+              Predict
+            </a>
+            <Link
+              to="/contact"
+              className={`font-medium hover:text-primary-500 transition-colors ${
+                location.pathname === "/contact"
+                  ? "text-primary-500"
+                  : "text-gray-700"
+              }`}
+            >
               Contact Us
             </Link>
           </nav>
@@ -74,14 +108,14 @@ const NavBar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
-                <Link to="/dashboard" className="flex items-center space-x-2 text-gray-700 hover:text-primary-500">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-primary-500"
+                >
                   <User size={20} />
                   <span>Dashboard</span>
                 </Link>
-                <button 
-                  onClick={() => signOut()} 
-                  className="btn-outline py-2"
-                >
+                <button onClick={() => signOut()} className="btn-outline py-2">
                   Sign Out
                 </button>
               </div>
@@ -98,8 +132,8 @@ const NavBar: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
-            onClick={toggleMenu} 
+          <button
+            onClick={toggleMenu}
             className="md:hidden p-2 focus:outline-none"
             aria-label={isOpen ? "Close menu" : "Open menu"}
           >
@@ -117,26 +151,63 @@ const NavBar: React.FC = () => {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             className="md:hidden bg-white"
           >
             <div className="container-custom py-6 px-4 space-y-6">
               <nav className="flex flex-col space-y-4">
-                <Link to="/" className={`font-medium text-lg ${location.pathname === '/' ? 'text-primary-500' : 'text-gray-700'}`}>
+                <Link
+                  to="/"
+                  className={`font-medium text-lg ${
+                    location.pathname === "/"
+                      ? "text-primary-500"
+                      : "text-gray-700"
+                  }`}
+                >
                   Home
                 </Link>
-                <Link to="/how-it-works" className={`font-medium text-lg ${location.pathname === '/how-it-works' ? 'text-primary-500' : 'text-gray-700'}`}>
+                <Link
+                  to="/how-it-works"
+                  className={`font-medium text-lg ${
+                    location.pathname === "/how-it-works"
+                      ? "text-primary-500"
+                      : "text-gray-700"
+                  }`}
+                >
                   How It Works
                 </Link>
-                <Link to="/map" className={`font-medium text-lg ${location.pathname === '/map' ? 'text-primary-500' : 'text-gray-700'}`}>
+                <Link
+                  to="/map"
+                  className={`font-medium text-lg ${
+                    location.pathname === "/map"
+                      ? "text-primary-500"
+                      : "text-gray-700"
+                  }`}
+                >
                   Food Map
                 </Link>
-                <Link to="/dashboard" className={`font-medium text-lg ${location.pathname.includes('/dashboard') ? 'text-primary-500' : 'text-gray-700'}`}>
+                <a
+                  href="https://maverick4.netlify.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`font-medium text-lg ${
+                    location.pathname.includes("/dashboard")
+                      ? "text-primary-500"
+                      : "text-gray-700"
+                  }`}
+                >
                   Dashboard
-                </Link>
-                <Link to="/contact" className={`font-medium text-lg ${location.pathname === '/contact' ? 'text-primary-500' : 'text-gray-700'}`}>
+                </a>
+                <Link
+                  to="/contact"
+                  className={`font-medium text-lg ${
+                    location.pathname === "/contact"
+                      ? "text-primary-500"
+                      : "text-gray-700"
+                  }`}
+                >
                   Contact Us
                 </Link>
               </nav>
@@ -147,8 +218,8 @@ const NavBar: React.FC = () => {
                     <Link to="/dashboard" className="btn-primary w-full">
                       Dashboard
                     </Link>
-                    <button 
-                      onClick={() => signOut()} 
+                    <button
+                      onClick={() => signOut()}
                       className="btn-outline w-full"
                     >
                       Sign Out
