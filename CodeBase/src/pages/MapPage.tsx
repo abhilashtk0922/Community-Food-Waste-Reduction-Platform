@@ -1,12 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { getFoodListings } from '../lib/supabase';
-import { Filter, Search, Clock, Star, Sliders } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { Filter, Search, Clock, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-// Set Mapbox token from env var
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
+// Fix for default marker icons in Leaflet with React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 // Food listing type
 interface FoodListing {
@@ -27,18 +32,31 @@ interface FoodListing {
   urgency: 'low' | 'medium' | 'high';
 }
 
+const defaultCenter: [number, number] = [40.7128, -74.0060];
+
+// Component to handle map view changes
+const MapController: React.FC<{ center: [number, number] }> = ({ center }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    map.setView(center);
+  }, [center, map]);
+  
+  return null;
+};
+
 const MapPage: React.FC = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
   const [listings, setListings] = useState<FoodListing[]>([]);
   const [filters, setFilters] = useState({
     foodType: '',
     urgency: '',
     distance: 10, // in km
   });
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<FoodListing | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  
+  const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCenter);
+  const [mapReady, setMapReady] = useState(false);
+
   // Mock data for food listings
   const mockListings: FoodListing[] = [
     {
@@ -93,44 +111,7 @@ const MapPage: React.FC = () => {
       urgency: 'low'
     }
   ];
-  
-  // Initialize map when component mounts
-  useEffect(() => {
-    if (map.current || !mapContainer.current) return;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [-74.0060, 40.7128], // Default to NYC
-      zoom: 12
-    });
-    
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    
-    // Add user location control
-    map.current.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        trackUserLocation: true
-      })
-    );
-    
-    map.current.on('load', () => {
-      setMapLoaded(true);
-    });
-    
-    // Clean up on unmount
-    return () => {
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
-  }, []);
-  
+
   // Load food listings data
   useEffect(() => {
     // In a real app, this would fetch from Supabase
@@ -145,65 +126,46 @@ const MapPage: React.FC = () => {
     // Using mock data for now
     setListings(mockListings);
   }, [filters]);
-  
-  // Add markers to map when listings or map changes
-  useEffect(() => {
-    if (!map.current || !mapLoaded || listings.length === 0) return;
-    
-    // Remove existing markers
-    const markers = document.querySelectorAll('.mapboxgl-marker');
-    markers.forEach(marker => marker.remove());
-    
-    // Add new markers
-    listings.forEach(listing => {
-      const { latitude, longitude } = listing.location;
-      
-      // Create custom marker element
-      const markerEl = document.createElement('div');
-      markerEl.className = 'custom-marker';
-      markerEl.innerHTML = `
-        <div class="w-10 h-10 bg-white rounded-full border-2 flex items-center justify-center shadow-lg ${
-          listing.urgency === 'high' 
-            ? 'border-error-500' 
-            : listing.urgency === 'medium' 
-              ? 'border-warning-500' 
-              : 'border-success-500'
-        }">
-          <div class="w-6 h-6 bg-${
-            listing.urgency === 'high' 
-              ? 'error' 
-              : listing.urgency === 'medium' 
-                ? 'warning' 
-                : 'success'
-          }-500 rounded-full"></div>
-        </div>
-      `;
-      
-      // Create popup
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-        <div class="p-2">
-          <h3 class="font-bold text-gray-800">${listing.name}</h3>
-          <p class="text-sm text-gray-600">${listing.description}</p>
-          <p class="text-sm mt-2"><strong>Quantity:</strong> ${listing.quantity}</p>
-          <p class="text-sm"><strong>Expires:</strong> ${new Date(listing.expiration).toLocaleDateString()}</p>
-          <p class="text-sm"><strong>Donor:</strong> ${listing.donor_name}</p>
-          <a href="/map?listing=${listing.id}" class="block mt-2 text-center px-4 py-2 bg-primary-500 text-white rounded-md text-sm">View Details</a>
-        </div>
-      `);
-      
-      // Add marker to map
-      new mapboxgl.Marker(markerEl)
-        .setLngLat([longitude, latitude])
-        .setPopup(popup)
-        .addTo(map.current!);
-    });
-  }, [listings, mapLoaded]);
-  
+
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
-  
+
+  const getMarkerColor = (urgency: string) => {
+    switch (urgency) {
+      case 'high':
+        return '#ef4444'; // red
+      case 'medium':
+        return '#f97316'; // orange
+      case 'low':
+        return '#22c55e'; // green
+      default:
+        return '#3b82f6'; // blue
+    }
+  };
+
+  const createCustomIcon = (urgency: string) => {
+    return L.divIcon({
+      className: 'custom-marker',
+      html: `<div style="
+        background-color: ${getMarkerColor(urgency)};
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      "></div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+  };
+
+  const handleListingClick = (listing: FoodListing) => {
+    setSelectedListing(listing);
+    setMapCenter([listing.location.latitude, listing.location.longitude]);
+  };
+
   return (
     <section className="min-h-screen pt-20 pb-16">
       <div className="container-custom">
@@ -238,7 +200,7 @@ const MapPage: React.FC = () => {
         </div>
         
         {/* Filters panel */}
-        <motion.div 
+        <motion.div
           className="bg-white rounded-lg shadow-md p-4 mb-6"
           initial={{ height: 0, opacity: 0 }}
           animate={{ 
@@ -310,10 +272,50 @@ const MapPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Map */}
           <div className="lg:w-3/4">
-            <div 
-              ref={mapContainer} 
-              className="map-container rounded-lg shadow-lg border border-gray-200"
-            />
+            <div className="map-container rounded-lg shadow-lg border border-gray-200" style={{ height: '70vh' }}>
+              {mapReady ? (
+                <MapContainer
+                  center={mapCenter}
+                  zoom={12}
+                  style={{ height: '100%', width: '100%' }}
+                  scrollWheelZoom={true}
+                  whenReady={() => setMapReady(true)}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <MapController center={mapCenter} />
+                  {listings.map((listing) => (
+                    <Marker
+                      key={listing.id}
+                      position={[listing.location.latitude, listing.location.longitude]}
+                      icon={createCustomIcon(listing.urgency)}
+                      eventHandlers={{
+                        click: () => handleListingClick(listing),
+                      }}
+                    >
+                      <Popup>
+                        <div className="p-2">
+                          <h3 className="font-bold text-gray-800">{listing.name}</h3>
+                          <p className="text-sm text-gray-600">{listing.description}</p>
+                          <p className="text-sm mt-2"><strong>Quantity:</strong> {listing.quantity}</p>
+                          <p className="text-sm"><strong>Expires:</strong> {new Date(listing.expiration).toLocaleDateString()}</p>
+                          <p className="text-sm"><strong>Donor:</strong> {listing.donor_name}</p>
+                          <a href={`/map?listing=${listing.id}`} className="block mt-2 text-center px-4 py-2 bg-primary-500 text-white rounded-md text-sm">
+                            View Details
+                          </a>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Listings sidebar */}
@@ -350,7 +352,10 @@ const MapPage: React.FC = () => {
                       Expires: {new Date(listing.expiration).toLocaleDateString()}
                     </div>
                     
-                    <button className="mt-3 w-full py-1.5 bg-primary-50 text-primary-600 rounded text-sm font-medium hover:bg-primary-100 transition-colors">
+                    <button 
+                      className="mt-3 w-full py-1.5 bg-primary-50 text-primary-600 rounded text-sm font-medium hover:bg-primary-100 transition-colors"
+                      onClick={() => handleListingClick(listing)}
+                    >
                       View Details
                     </button>
                   </div>

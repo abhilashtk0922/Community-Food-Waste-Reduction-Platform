@@ -28,6 +28,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const createProfile = async (userId: string, userData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            full_name: userData.full_name || '',
+            username: userData.username || '',
+            account_type: userData.account_type || 'recipient',
+            organization: userData.organization || '',
+            address: userData.address || '',
+            phone: userData.phone || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating profile:', error);
+        return null;
+      }
+      
+      return data;
+    } catch (err) {
+      console.error('Error in createProfile:', err);
+      return null;
+    }
+  };
+
   const loadProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -37,6 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
       
       if (error) {
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          const userData = await supabase.auth.getUser();
+          if (userData.data.user) {
+            return await createProfile(userId, userData.data.user.user_metadata);
+          }
+        }
         console.error('Error loading profile:', error);
         return null;
       }

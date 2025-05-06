@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, MessageSquare, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const ContactPage: React.FC = () => {
@@ -19,21 +19,21 @@ const ContactPage: React.FC = () => {
     {
       icon: <Mail className="h-6 w-6 text-primary-500" />,
       title: 'Email Us',
-      details: 'support@foodshare.example.com',
+      details: 'Maverick@foodshare.example.com',
       action: 'Send an email',
-      link: 'mailto:support@foodshare.example.com'
+      link: 'mailto:Maverick@foodshare.example.com'
     },
     {
       icon: <Phone className="h-6 w-6 text-primary-500" />,
       title: 'Call Us',
-      details: '(555) 123-4567',
+      details: '+91 9880236649',
       action: 'Make a call',
-      link: 'tel:+15551234567'
+      link: 'tel:+15366499'
     },
     {
       icon: <MapPin className="h-6 w-6 text-primary-500" />,
       title: 'Visit Us',
-      details: '123 Green Street, New York, NY 10001',
+      details: '123 MG Road,Bengaluru,Karnataka 562232,India',
       action: 'Get directions',
       link: 'https://maps.google.com/?q=123+Green+Street+New+York+NY+10001'
     }
